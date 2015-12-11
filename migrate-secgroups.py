@@ -22,9 +22,9 @@ neutron_binding_sql = """
 INSERT into securitygroupportbindings set port_id='%(port_id)s', security_group_id='%(group_id)s'
 """
 
-neutron_default_group_sql = """
-INSERT INTO default_security_group set tenant_id='%(tenant_id)s', security_group_id='%(group_id)s'
-"""
+#neutron_default_group_sql = """
+#INSERT INTO default_security_group set tenant_id='%(tenant_id)s', security_group_id='%(group_id)s'
+#"""
 
 
 def generate_uuid():
@@ -37,9 +37,9 @@ def execute(cursor, sql):
     cursor.execute(sql)
 
 
-def create_default_mapping(cursor, group_id, tenant_id):
-    data = {'group_id': group_id, 'tenant_id': tenant_id}
-    execute(cursor, neutron_default_group_sql % data)
+#def create_default_mapping(cursor, group_id, tenant_id):
+#    data = {'group_id': group_id, 'tenant_id': tenant_id}
+#    execute(cursor, neutron_default_group_sql % data)
 
 
 def create_default_rules(cursor, group):
