@@ -58,15 +58,15 @@ def create_default_rules(cursor, group):
         rule['uuid'] = generate_uuid()
         execute(cursor, neutron_rule_sql % rule)
 
-    if group['name'] == 'default':
-        create_default_mapping(cursor, group['uuid'],
-                               group['project_id'])
-        rule['direction'] = 'ingress'
-        rule['group_id'] = group['uuid']
-        for ethertype in ['IPv4', 'IPv6']:
-            rule['uuid'] = generate_uuid()
-            rule['ethertype'] = ethertype
-            execute(cursor, neutron_rule_sql % rule)
+    #if group['name'] == 'default':
+    #    create_default_mapping(cursor, group['uuid'],
+    #                           group['project_id'])
+    #    rule['direction'] = 'ingress'
+    #    rule['group_id'] = group['uuid']
+    #    for ethertype in ['IPv4', 'IPv6']:
+    #        rule['uuid'] = generate_uuid()
+    #        rule['ethertype'] = ethertype
+    #        execute(cursor, neutron_rule_sql % rule)
     cursor.connection.commit()
 
 
@@ -134,7 +134,7 @@ def delete_neutron_existing(cursor):
     cursor.execute("DELETE from securitygroupportbindings")
     cursor.execute("DELETE from securitygrouprules")
     cursor.execute("DELETE from securitygroups")
-    cursor.execute("DELETE from default_security_group")
+    # cursor.execute("DELETE from default_security_group")
     cursor.connection.commit()
 
 
