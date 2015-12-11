@@ -103,6 +103,7 @@ for network in get_all_networks():
 	dhcp_end = get_dhcp_end(cidr_v4)
 	dns_server1 = network_info[0]['dns1']
 	dns_server2 = network_info[0]['dns2']
+	tenant_id = network_info[0]['project_id']
 	dns_servers = ""
 	if dns_server1 and dns_server2:
 		dns_servers = "%s,%s" % (dns_server1, dns_server2)
@@ -121,6 +122,7 @@ for network in get_all_networks():
 	novanet2neutron_config.set(section, 'dhcp_start', dhcp_start)
 	novanet2neutron_config.set(section, 'dhcp_end', dhcp_end)
 	novanet2neutron_config.set(section, 'dns_servers', dns_servers)
+	novanet2neutron_config.set(section, 'tenant_id', tenant_id)
 
 # Open our FH
 cfgfile = open("novanet2neutron.conf", 'w')

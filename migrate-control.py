@@ -98,9 +98,10 @@ def create_networks(neutronc):
         else:
             name = "%s-%s" % (zone, network_name)
         physnet = CONF.get(section, 'physnet')
+	tenant_id = CONF.get(section, 'tenant_id')
         network = common.get_network(neutronc, name)
         if not network:
-            network = common.create_network(neutronc, name, physnet)
+            network = common.create_network(neutronc, name, tenant_id, physnet)
         mappings[section]['network_id'] = network
         subnet_v4 = common.get_subnet(neutronc, network, 4)
         try:
@@ -113,6 +114,7 @@ def create_networks(neutronc):
                 CONF.get(section, 'cidr_v4'),
                 CONF.get(section, 'dns_servers').split(','),
                 gateway_v4,
+                CONF.get(section, 'tenant_id'),
                 CONF.get(section, 'dhcp_start'),
                 CONF.get(section, 'dhcp_end'))
         mappings[section]['subnet_v4_id'] = subnet_v4

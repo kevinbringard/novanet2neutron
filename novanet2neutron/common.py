@@ -51,13 +51,18 @@ def all_servers(client, host=None):
     return servers
 
 
-def create_network(neutronc, network_name, physname='public'):
+def create_network(neutronc, network_name, tenant_id, physname='public'):
+#    body_sample = {'network': {'name': network_name,
+#                               'admin_state_up': True,
+#                               'provider:network_type': 'flat',
+#                               'provider:physical_network': physname,
+#                               'router:external': True,
+#                               'shared': True}}
+
     body_sample = {'network': {'name': network_name,
                                'admin_state_up': True,
-                               'provider:network_type': 'flat',
-                               'provider:physical_network': physname,
-                               'router:external': True,
-                               'shared': True}}
+                               'tenant_id': tenant_id,
+                               'shared': False}}
 
     network = neutronc.create_network(body=body_sample)
     net_dict = network['network']
@@ -67,14 +72,15 @@ def create_network(neutronc, network_name, physname='public'):
 
 
 def create_subnet(neutronc, network_id, protocol, cidr, dns_servers,
-                  gateway, dhcp_start=None, dhcp_end=None,
+                  gateway, tenant_id, dhcp_start=None, dhcp_end=None,
                   ipv6_address_mode=None, ipv6_ra_mode=None):
 
     body_create_subnet = {'subnets': [{'cidr': cidr,
                                        'ip_version': protocol,
                                        'network_id': network_id,
                                        'dns_nameservers': dns_servers,
-                                       'gateway_ip': gateway}]}
+                                       'gateway_ip': gateway,
+                                       'tenant_id': tenant_id}]}
     if dhcp_start and dhcp_end:
         body_create_subnet['subnets'][0]['allocation_pools'] = [
             {'start': dhcp_start, 'end': dhcp_end}]
