@@ -4,7 +4,10 @@ from neutron linuxbridge manager and nova linux_net
 
 import ConfigParser
 import os
-from oslo_concurrency import processutils
+# from oslo_concurrency import processutils
+from neutron.openstack.common import processutils
+
+
 
 
 CONF = ConfigParser.ConfigParser()

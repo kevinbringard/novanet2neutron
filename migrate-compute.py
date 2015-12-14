@@ -189,6 +189,7 @@ def main():
             network = get_network(neutronc, network_id)
             for option in ('device', 'bridge', 'nova_name'):
                 network[option] = CONF.get(section, option)
+            print network
             networks.append(network)
 
     instances = common.all_servers(novac, host=host)

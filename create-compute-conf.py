@@ -1,46 +1,5 @@
 #!/usr/bin/env python
 
-## This is what our output should look like
-# Connection information on how to connect to the migration DB
-#[db]
-#host=localhost
-#name=nova
-#user=nova
-#password=secret
-
-# Connection information on how to connect to your nova DB
-#[nova_db]
-#host=localhost
-#name=nova
-#user=nova
-#password=secret
-
-#[creds]
-#username=admin
-#password=secret
-#tenant_name=admin
-#auth_url=http://keystone.example.com:5000/v2.0/
-
-# Blocks must start with network_
-#[network_public]
-#neutron_net_id = XXX-XXX-XXX-XXX
-#nova_name = public
-#device = eth1
-#bridge = br100
-
-# If you have a second network uncomment and modify accordingly
-#[network_private]
-#neutron_net_id = XXX-XXX-XXX-XXX
-#nova_name = private
-#device = eth2
-#bridge = br50
-
-#[network_nova-devstack-1]
-#neutron_net_id = 2b6663df-624e-4a0b-a85f-f61965df8075
-#nova_name = devstack-1
-#device = eth0
-#bridge=br1
-
 import ConfigParser
 from netaddr import *
 import MySQLdb
@@ -144,7 +103,6 @@ def get_neutron_network_info(name):
 	sql = "SELECT id from networks where name like '%%%s%%'" % name
 	cursor.execute(sql)
 	neutron_network = cursor.fetchall()
-	print neutron_network
 	return neutron_network
 
 nova_db_host, nova_db_name, nova_db_pass, nova_db_user = get_nova_db_info(nova_db_string)
@@ -196,7 +154,7 @@ for network in get_all_nova_networks():
         
         section = "network_" + name
         novanet2neutron_config.add_section(section)
-        novanet2neutron_config.set(section, 'name', name)
+        novanet2neutron_config.set(section, 'nova_name', name)
         novanet2neutron_config.set(section, 'device', device) 
         novanet2neutron_config.set(section, 'bridge', bridge)
 	neutron_net_id = get_neutron_network_info(name)[0]['id']
