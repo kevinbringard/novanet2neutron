@@ -100,7 +100,9 @@ def migrate_interfaces(noop, migrate_manager, neutronc,
 
         for instance in instances:
             print "Migrating %s" % instance.id
+            print "nova_name: %s" % network['nova_name']
             mac_address = common.get_mac_db(cursor, instance, network['nova_name'])
+            print "Mac address: %s" % mac_address
             if not mac_address:
                 continue
             if instance.status in ['SHUTOFF', 'SUSPENDED']:
