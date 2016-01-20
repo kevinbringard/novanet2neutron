@@ -94,9 +94,9 @@ def migrate_interfaces(noop, migrate_manager, neutronc,
             utils.rename_net_dev(noop, old_bridge, new_bridge)
 
         interfaces = utils.get_interfaces_on_bridge(new_bridge)
-        if raw_device not in interfaces:
-            # Add raw device back onto bridge
-            utils.add_dev_to_bridge(noop, new_bridge, raw_device)
+        #if raw_device not in interfaces:
+        #    # Add raw device back onto bridge
+        #    utils.add_dev_to_bridge(noop, new_bridge, raw_device)
 
         for instance in instances:
             print "Migrating %s" % instance.id
