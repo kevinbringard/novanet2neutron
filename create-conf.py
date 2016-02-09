@@ -8,8 +8,15 @@ import re
 
 NOVA_CONF = "/etc/nova/nova.conf"
 NEUTRON_CONF = "/etc/neutron/plugins/ml2/ml2_conf.ini"
-ZONE = "nova"
-PHYSNET = "vlan_net1"
+ZONE = ""
+PHYSNET = ""
+
+if ZONE is None:
+  print "You need to set ZONE in $0"
+  sys.exit(1)
+elif PHYSNET is None:
+  print "You need to set PHYSNET in $0"
+  sys.exit(1)
 
 if os.path.isfile(NOVA_CONF):
 	nova_config = ConfigParser.ConfigParser()
@@ -34,7 +41,7 @@ def get_nova_db_info(db_string):
 	db_host = split_string[0]
 	split_string = re.split(r'\?', split_string[-1])
 	db_name = split_string[0]
-	
+
 	# Start over to get the DB pass
 	split_string = re.split(r':', db_string)
 	db_pass = re.split(r'@', split_string[-1])
@@ -42,7 +49,7 @@ def get_nova_db_info(db_string):
 	# And finally, get the db_user
 	split_string = re.split(r':', db_string)
         db_user = [ re.sub(r'//','', string) for string in split_string ]
-	
+
 	return db_host, db_name, db_pass[0], db_user[1]
 
 def get_neutron_db_info(db_string):
@@ -53,15 +60,15 @@ def get_neutron_db_info(db_string):
         db_host = split_string[0]
         split_string = re.split(r'\?', split_string[-1])
         db_name = split_string[0]
-        
-        # Start over to get the DB pass 
+
+        # Start over to get the DB pass
         split_string = re.split(r':', db_string)
         db_pass = re.split(r'@', split_string[-1])
 
-        # And finally, get the db_user 
+        # And finally, get the db_user
         split_string = re.split(r':', db_string)
         db_user = [ re.sub(r'//','', string) for string in split_string ]
-        
+
         return db_host, db_name, db_pass[0], db_user[1]
 
 def get_all_networks():
@@ -104,6 +111,7 @@ for network in get_all_networks():
 	dns_server1 = network_info[0]['dns1']
 	dns_server2 = network_info[0]['dns2']
 	tenant_id = network_info[0]['project_id']
+    vlan = network_info[0]['vlan']
 	dns_servers = ""
 	if dns_server1 and dns_server2:
 		dns_servers = "%s,%s" % (dns_server1, dns_server2)
@@ -111,7 +119,7 @@ for network in get_all_networks():
 		dns_servers = dns_server1
 	elif dns_server2:
 		dns_servers = dns_server2
-	
+
 	section = "network_" + ZONE + ":" + name
 	novanet2neutron_config.add_section(section)
 	novanet2neutron_config.set(section, 'zone', ZONE)
@@ -123,6 +131,7 @@ for network in get_all_networks():
 	novanet2neutron_config.set(section, 'dhcp_end', dhcp_end)
 	novanet2neutron_config.set(section, 'dns_servers', dns_servers)
 	novanet2neutron_config.set(section, 'tenant_id', tenant_id)
+	novanet2neutron_config.set(section, 'vlan', vlan)
 
 # Open our FH
 cfgfile = open("novanet2neutron.conf", 'w')
