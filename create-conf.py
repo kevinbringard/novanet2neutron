@@ -49,7 +49,7 @@ def get_nova_db_info(db_string):
 
     # And finally, get the db_user
     split_string = re.split(r':', db_string)
-        db_user = [ re.sub(r'//','', string) for string in split_string ]
+    db_user = [ re.sub(r'//','', string) for string in split_string ]
 
     return db_host, db_name, db_pass[0], db_user[1]
 
@@ -112,7 +112,7 @@ for network in get_all_networks():
     dns_server1 = network_info[0]['dns1']
     dns_server2 = network_info[0]['dns2']
     tenant_id = network_info[0]['project_id']
-        vlan = network_info[0]['vlan']
+    vlan = network_info[0]['vlan']
     dns_servers = ""
     if dns_server1 and dns_server2:
         dns_servers = "%s,%s" % (dns_server1, dns_server2)
