@@ -48,6 +48,8 @@ def add_instance(cursor, instance):
 
         for a in addresses:
             data['mac_address'] = a.get('OS-EXT-IPS-MAC:mac_addr')
+            if a['OS-EXT-IPS:type'] != "fixed":
+                continue
             if a['version'] == 4:
                 ip_v4 = a.get('addr')
                 data['ip_v4'] = ip_v4
