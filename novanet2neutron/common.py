@@ -51,7 +51,7 @@ def all_servers(client, host=None):
     return servers
 
 
-def create_network(neutronc, network_name, tenant_id, physname='public'):
+def create_network(neutronc, network_name, tenant_id, vlan, physname='public'):
 #    body_sample = {'network': {'name': network_name,
 #                               'admin_state_up': True,
 #                               'provider:network_type': 'flat',
@@ -62,6 +62,9 @@ def create_network(neutronc, network_name, tenant_id, physname='public'):
     body_sample = {'network': {'name': network_name,
                                'admin_state_up': True,
                                'tenant_id': tenant_id,
+                               'provider:network_type': 'vlan',
+                               'provider:physical_network': physname,
+                               'provider:segmentation_id': vlan,
                                'shared': False}}
 
     network = neutronc.create_network(body=body_sample)

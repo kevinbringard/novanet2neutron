@@ -100,8 +100,9 @@ def create_networks(neutronc):
         physnet = CONF.get(section, 'physnet')
 	tenant_id = CONF.get(section, 'tenant_id')
         network = common.get_network(neutronc, name)
+        vlan = CONF.get(section, 'vlan')
         if not network:
-            network = common.create_network(neutronc, name, tenant_id, physnet)
+            network = common.create_network(neutronc, name, tenant_id, vlan, physnet)
         mappings[section]['network_id'] = network
         subnet_v4 = common.get_subnet(neutronc, network, 4)
         try:
