@@ -9,19 +9,19 @@ SECGROUP_NAME="default,ssh-icmp"
 TENANTS="tenant1 tenant2 tenant3 tenant4 tenant5 tenant6 tenant7 tenant8"
 PUBKEY=""
 USER_NAME=""
-ROLE_NAME=""
+ROLE_NAME="Member"
 ADMIN_RC_FILE=""
-AUTH_HOST=""
+AUTH_HOST="127.0.0.1"
 
 
-source $ADMIN_RC_FILE
+source $ADMIN_RC_FILE admin admin
 
 for i in $TENANTS; do
 
-  echo "Creating user ${i}-user"
-  keystone user-create --name ${i}-user --pass password --tenant $i
   echo "Creating tenant $i"
   keystone tenant-create --name $i
+  echo "Creating user ${i}-user"
+  keystone user-create --name ${i}-user --pass password --tenant $i
   echo "Adding ${i}-user as $ROLE_NAME to tenant $i"
   keystone user-role-add --user ${i}-user --role $ROLE_NAME --tenant $i
   echo "Creating creds file for ${i}-user in $i"
