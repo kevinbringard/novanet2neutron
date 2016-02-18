@@ -99,10 +99,10 @@ def migrate_interfaces(noop, migrate_manager, neutronc,
         #    utils.add_dev_to_bridge(noop, new_bridge, raw_device)
 
         for instance in instances:
-            print "Migrating %s" % instance.id
-            print "nova_name: %s" % network['nova_name']
+        #    print "Migrating %s" % instance.id
+        #    print "nova_name: %s" % network['nova_name']
             mac_address = common.get_mac_db(cursor, instance, network['nova_name'])
-            print "Mac address: %s" % mac_address
+        #    print "Mac address: %s" % mac_address
             if not mac_address:
                 continue
             if instance.status in ['SHUTOFF', 'SUSPENDED']:
@@ -191,7 +191,7 @@ def main():
             network = get_network(neutronc, network_id)
             for option in ('device', 'bridge', 'nova_name'):
                 network[option] = CONF.get(section, option)
-            print network
+            # print network
             networks.append(network)
 
     instances = common.all_servers(novac, host=host)

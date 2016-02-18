@@ -151,12 +151,14 @@ for network in get_all_nova_networks():
         name = network_info[0]['label']
         device = network_info[0]['bridge_interface']
         bridge = network_info[0]['bridge']
+        vlan = network_info[0]['vlan']
         
         section = "network_" + name
         novanet2neutron_config.add_section(section)
         novanet2neutron_config.set(section, 'nova_name', name)
         novanet2neutron_config.set(section, 'device', device) 
         novanet2neutron_config.set(section, 'bridge', bridge)
+        novanet2neutron_config.set(section, 'vlan', vlan)
 	neutron_net_id = get_neutron_network_info(name)[0]['id']
 	novanet2neutron_config.set(section, 'neutron_net_id', neutron_net_id)
 
