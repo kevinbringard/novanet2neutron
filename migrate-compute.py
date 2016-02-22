@@ -80,13 +80,17 @@ def migrate_interfaces(noop, migrate_manager, neutronc,
         old_bridge = manager.get_old_bridge()
         new_bridge = manager.get_new_bridge()
         raw_device = network['device']
+        vlan = network['provider:segmentation_id']
 
         # remove interfaces from bridge
         interfaces = utils.get_interfaces_on_bridge(old_bridge)
         for interface in interfaces:
+            # Remove VLAN tags from bridge
+            if interface != raw_device and interface.startswith("vlan"):
+                utils.rm_dev_from_bridge(noop, old_bridge, interface, vlan)
             # Remove all instance taps from bridge
             if interface != raw_device and interface.startswith(manager.tap_prefix):
-                utils.rm_dev_from_bridge(noop, old_bridge, interface)
+                utils.rm_dev_from_bridge(noop, old_bridge, interface, vlan=None)
         if not utils.device_exists(new_bridge):
             # Remove pyhsical interfce from bridge
             utils.rm_dev_from_bridge(noop, old_bridge, raw_device)
@@ -97,6 +101,13 @@ def migrate_interfaces(noop, migrate_manager, neutronc,
         #if raw_device not in interfaces:
         #    # Add raw device back onto bridge
         #    utils.add_dev_to_bridge(noop, new_bridge, raw_device)
+
+        vlan_device = raw_device + "." + str(vlan)
+        if vlan_device not in interfaces:
+            # Create the VLAN device if it doesn't exist
+            utils.create_vlan_device(noop, vlan, raw_device)
+            # Add VLAN device back onto bridge
+            utils.add_dev_to_bridge(noop, new_bridge, vlan_device)
 
         for instance in instances:
         #    print "Migrating %s" % instance.id

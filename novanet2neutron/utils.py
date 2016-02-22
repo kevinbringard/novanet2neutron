@@ -44,6 +44,18 @@ def device_exists(device):
     """Check if ethernet device exists."""
     return os.path.exists('/sys/class/net/%s' % device)
 
+def create_vlan_device(noop, vlan, dev):
+    """Create the VLAN device."""
+    if device_exists(dev) or noop:
+        try:
+            print "Running Cmd: ip link add link %s name %s.%s type vlan id %s" % (dev, dev, vlan, vlan)
+            if not noop:
+                processutils.execute('ip', 'link', 'add', 'link', dev, 'name',
+                                     dev + "." + vlan, 'type', 'vlan', 'id', vlan,
+                                     run_as_root=True,
+                                     check_exit_code=[0, 2, 254])
+        except processutils.ProcessExecutionError:
+            print "ERROR creating VLAN %s on %s" % (vlan, dev)
 
 def add_dev_to_bridge(noop, bridge, dev):
     if (device_exists(dev) and device_exists(bridge)) or noop:
@@ -57,7 +69,7 @@ def add_dev_to_bridge(noop, bridge, dev):
             print "ERROR adding %s to %s" % (dev, bridge)
 
 
-def rm_dev_from_bridge(noop, bridge, dev):
+def rm_dev_from_bridge(noop, bridge, dev, vlan=None):
     if device_exists(dev) and device_exists(bridge):
         try:
             print "Running Cmd: brctl delif %s %s" % (bridge, dev)
@@ -67,7 +79,15 @@ def rm_dev_from_bridge(noop, bridge, dev):
                                      check_exit_code=[0, 2, 254])
         except processutils.ProcessExecutionError:
             print "ERROR adding %s to %s" % (dev, bridge)
-
+    if vlan is not None:
+        try:
+            print "Running Cmd: vconfig rem vlan%s" % vlan
+            if not noop:
+                processutils.execute('vconfig', 'rem', "vlan" + vlan,
+                                     run_as_root=True,
+                                     check_exit_code=[0, 2, 254])
+        except processutils.ProcessExecutionError:
+             print "ERROR removing vlan %s from %s" % (vlan, dev)
 
 def net_dev_up(noop, dev):
     if device_exists(dev) or noop:
