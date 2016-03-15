@@ -9,8 +9,9 @@ import sys
 
 NOVA_CONF = "/etc/nova/nova.conf"
 NEUTRON_CONF = "/etc/neutron/plugins/ml2/ml2_conf.ini"
-ZONE = ""
-PHYSNET = ""
+DNSMASQ_CONF="/etc/nova/dnsmasq.conf"
+ZONE = "dev10"
+PHYSNET = "bond0"
 
 if ZONE is None or ZONE == "":
   print "You need to set ZONE in this script"
@@ -90,6 +91,22 @@ def get_dhcp_end(cidr):
     net = IPNetwork(cidr)
     return net[-2]
 
+def get_dnsmasq_gateway(network):
+    config_file = open(DNSMASQ_CONF)
+    content = config_file.readlines()
+    for line in content:
+        if "router," in line:
+            router_line = re.split(r',', line)
+            # print router_line
+            router_ip = router_line[-1].rstrip()
+            for item in router_line:
+                if "tag:" in item:
+                    item = item.split(":")
+                    if network == item[-1]:
+                        return router_ip
+                    else:
+                        continue
+
 # Pull the DB info out of the config files
 nova_db_host, nova_db_name, nova_db_pass, nova_db_user = get_nova_db_info(nova_db_string)
 neutron_db_host, neutron_db_name, neutron_db_pass, neutron_db_user = get_neutron_db_info(neutron_db_string)
@@ -106,7 +123,10 @@ for network in get_all_networks():
     # print network_info
     name = network_info[0]['label']
     cidr_v4 = network_info[0]['cidr']
-    gateway_v4 = network_info[0]['gateway']
+    if os.path.isfile(DNSMASQ_CONF):
+        gateway_v4 = get_dnsmasq_gateway(name)
+    else:
+        gateway_v4 = network_info[0]['gateway']
     dhcp_start = network_info[0]['dhcp_start']
     dhcp_end = get_dhcp_end(cidr_v4)
     dns_server1 = network_info[0]['dns1']

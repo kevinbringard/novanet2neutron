@@ -39,7 +39,7 @@ def add_port(neutronc, instance, network_id, subnet_id,
                                          network_id=network_id)
     if not instance_ports['ports']:
         try:
-            print 'attach interface'
+            print "attach interface: %s" % port['id']
             instance.interface_attach(port['id'], None, None)
         except Exception, e:
             print e
