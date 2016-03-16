@@ -83,7 +83,7 @@ def rm_dev_from_bridge(noop, bridge, dev, vlan=None):
         try:
             print "Running Cmd: vconfig rem vlan%s" % vlan
             if not noop:
-                processutils.execute('vconfig', 'rem', "vlan" + vlan,
+                processutils.execute('vconfig', 'rem', "vlan" + str(vlan),
                                      run_as_root=True,
                                      check_exit_code=[0, 2, 254])
         except processutils.ProcessExecutionError:
