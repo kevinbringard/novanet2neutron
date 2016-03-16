@@ -3,12 +3,22 @@
 import ConfigParser
 from netaddr import *
 import MySQLdb
+import optparse
 import os
 import re
+
+parser = optparse.OptionParser("usage: %prog -H <hostname>")
+parser.add_option("-H", "--host", dest="hostname", type="string",
+		  default="mhv1.dev10.mc.metacloud.in",
+		  help="Specify the host to generate the config for")
+
+(options, args) = parser.parse_args()
+host = options.hostname
 
 NOVA_CONF = "/etc/nova/nova.conf"
 NEUTRON_ML2_CONF = "/etc/neutron/plugins/ml2/ml2_conf.ini"
 NEUTRON_CONF = "/etc/neutron/neutron.conf"
+# host = "mhv1.dev10.mc.metacloud.in"
 
 if os.path.isfile(NOVA_CONF):
         nova_config = ConfigParser.ConfigParser()
@@ -105,6 +115,13 @@ def get_neutron_network_info(name):
 	neutron_network = cursor.fetchall()
 	return neutron_network
 
+def get_neutron_networks_on_host(host):
+	cursor = MySQLdb.cursors.DictCursor(neutron_conn)
+	sql = "select distinct ml2_network_segments.network_id from ml2_port_bindings, ml2_network_segments where ml2_port_bindings.segment = ml2_network_segments.id and ml2_port_bindings.host like '%%%s%%'" % host
+	cursor.execute(sql)
+	neutron_network_ids_on_host = cursor.fetchall()
+	return neutron_network_ids_on_host
+
 nova_db_host, nova_db_name, nova_db_pass, nova_db_user = get_nova_db_info(nova_db_string)
 neutron_db_host, neutron_db_name, neutron_db_pass, neutron_db_user = get_neutron_db_info(neutron_db_string)
 creds_auth_url, creds_username, creds_tenant, creds_password = get_creds_info()
@@ -122,7 +139,7 @@ neutron_conn = MySQLdb.connect(
     db=neutron_db_name)
 
 # Open our FH
-cfgfile = open("compute.conf", 'w')
+cfgfile = open(host + "_compute.conf", 'w')
 
 # Create the [db] section
 novanet2neutron_config.add_section('db')
@@ -152,15 +169,18 @@ for network in get_all_nova_networks():
         device = network_info[0]['bridge_interface']
         bridge = network_info[0]['bridge']
         vlan = network_info[0]['vlan']
-        
-        section = "network_" + name
-        novanet2neutron_config.add_section(section)
-        novanet2neutron_config.set(section, 'nova_name', name)
-        novanet2neutron_config.set(section, 'device', device) 
-        novanet2neutron_config.set(section, 'bridge', bridge)
-        novanet2neutron_config.set(section, 'vlan', vlan)
+       
 	neutron_net_id = get_neutron_network_info(name)[0]['id']
-	novanet2neutron_config.set(section, 'neutron_net_id', neutron_net_id)
+	ids_on_host = get_neutron_networks_on_host(host)
+	for id_on_host in ids_on_host:
+		if neutron_net_id == id_on_host['network_id']:
+        		section = "network_" + name
+        		novanet2neutron_config.add_section(section)
+        		novanet2neutron_config.set(section, 'nova_name', name)
+        		novanet2neutron_config.set(section, 'device', device) 
+        		novanet2neutron_config.set(section, 'bridge', bridge)
+        		novanet2neutron_config.set(section, 'vlan', vlan)
+			novanet2neutron_config.set(section, 'neutron_net_id', neutron_net_id)
 
 # Write the file and close the FH
 novanet2neutron_config.write(cfgfile)
