@@ -49,6 +49,7 @@ def create_vlan_device(noop, vlan, dev):
     if device_exists(dev) or noop:
         try:
             print "Running Cmd: ip link add link %s name %s.%s type vlan id %s" % (dev, dev, vlan, vlan)
+	    # Running Cmd: ip link add link bond0 name bond0.2203 type vlan id 2203
             if not noop:
                 processutils.execute('ip', 'link', 'add', 'link', dev, 'name',
                                      dev + "." + str(vlan), 'type', 'vlan', 'id', str(vlan),
@@ -56,6 +57,16 @@ def create_vlan_device(noop, vlan, dev):
                                      check_exit_code=[0, 2, 254])
         except processutils.ProcessExecutionError:
             print "ERROR creating VLAN %s on %s" % (vlan, dev)
+
+	try:
+	    print "Running Cmd: ip link set %s.%s up" % (dev, vlan)
+	    if not noop:
+		processutils.execute('ip', 'link', 'set', dev + "." + str(vlan), 'up',
+				     run_as_root=True,
+				     check_exit_code=[0, 2, 254])
+
+	except processutils.ProcessExecutionError:
+	    print "ERROR setting link up on %s.%s" % (dev, vlan)
 
 def add_dev_to_bridge(noop, bridge, dev):
     if (device_exists(dev) and device_exists(bridge)) or noop:
