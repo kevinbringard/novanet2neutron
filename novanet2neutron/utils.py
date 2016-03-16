@@ -51,7 +51,7 @@ def create_vlan_device(noop, vlan, dev):
             print "Running Cmd: ip link add link %s name %s.%s type vlan id %s" % (dev, dev, vlan, vlan)
             if not noop:
                 processutils.execute('ip', 'link', 'add', 'link', dev, 'name',
-                                     dev + "." + vlan, 'type', 'vlan', 'id', vlan,
+                                     dev + "." + str(vlan), 'type', 'vlan', 'id', str(vlan),
                                      run_as_root=True,
                                      check_exit_code=[0, 2, 254])
         except processutils.ProcessExecutionError:
