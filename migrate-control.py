@@ -93,10 +93,10 @@ def create_networks(neutronc):
             mappings[section][option] = CONF.get(section, option)
         zone = CONF.get(section, 'zone')
         network_name = CONF.get(section, 'name')
-        # if zone == network_name:
-        #     name = zone
-        # else:
-        #     name = "%s-%s" % (zone, network_name)
+        if zone == network_name:
+            name = zone
+        else:
+            name = "%s" % (network_name)
         physnet = CONF.get(section, 'physnet')
 	tenant_id = CONF.get(section, 'tenant_id')
         network = common.get_network(neutronc, name)
