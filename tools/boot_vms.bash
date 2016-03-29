@@ -11,6 +11,7 @@ for i in $TENANTS; do
   echo "Creating VMs for tentant $i"
   source ${i}.creds
   nova boot --flavor $FLAVOR_NAME --image $IMAGE_NAME --key-name $KEY_NAME --security-groups $SECGROUP_NAME ${i}-vm1
+  sleep 2
   nova boot --flavor $FLAVOR_NAME --image $IMAGE_NAME --key-name $KEY_NAME --security-groups $SECGROUP_NAME ${i}-vm2
 
 done
