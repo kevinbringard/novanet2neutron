@@ -82,17 +82,17 @@ def get_free_ips_for_net(network_id):
 
     return free_ips
 
-def generate_dhcp_ranges(network_id):
+def generate_dhcp_allocation_pools(network_id):
     free_ips = get_free_ips_for_net(network_id)
     ip_list = []
     for ip in free_ips:
-        ip_list.append(IPAddress(ip['address']))
+        ip_list.append(IPAddress(ip['address']))
     merged_list = cidr_merge(ip_list)
 
     ip_ranges = ""
     for network in merged_list:
         allocation_pool = IPSet(network)
-        if ip_ranges == "":
+        if ip_ranges == "":
             ip_ranges = str(allocation_pool.iprange())
         else:
             ip_ranges = ip_ranges + "," + str(allocation_pool.iprange())
@@ -159,6 +159,7 @@ for network in get_all_networks():
     dns_server2 = network_info[0]['dns2']
     tenant_id = network_info[0]['project_id']
     vlan = network_info[0]['vlan']
+    allocation_pools = generate_dhcp_allocation_pools(uuid)
     dns_servers = ""
     if dns_server1 and dns_server2:
         dns_servers = "%s,%s" % (dns_server1, dns_server2)
@@ -176,6 +177,7 @@ for network in get_all_networks():
     novanet2neutron_config.set(section, 'gateway_v4', gateway_v4)
     novanet2neutron_config.set(section, 'dhcp_start', dhcp_start)
     novanet2neutron_config.set(section, 'dhcp_end', dhcp_end)
+    novanet2neutron_config.set(section, 'allocation_pools', allocation_pools)
     novanet2neutron_config.set(section, 'dns_servers', dns_servers)
     novanet2neutron_config.set(section, 'tenant_id', tenant_id)
     novanet2neutron_config.set(section, 'vlan', vlan)
