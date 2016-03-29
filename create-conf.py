@@ -73,6 +73,32 @@ def get_neutron_db_info(db_string):
 
         return db_host, db_name, db_pass[0], db_user[1]
 
+def get_free_ips_for_net(network_id):
+    cursor = MySQLdb.cursors.DictCursor(conn)
+    # select address from fixed_ips, networks where networks.id = fixed_ips.network_id and fixed_ips.reserved = 0 and networks.uuid = '02ad4c9b-ebe8-491a-b288-e33069ab4236';
+    cursor.execute(
+       "SELECT address FROM fixed_ips, networks WHERE networks.id = fixed_ips.network_id AND fixed_ips.reserved = 0 AND networks.uuid = '%s'" % network_id)
+    free_ips = cursor.fetchall()
+
+    return free_ips
+
+def generate_dhcp_ranges(network_id):
+    free_ips = get_free_ips_for_net(network_id)
+    ip_list = []
+    for ip in free_ips:
+        ip_list.append(IPAddress(ip['address']))
+    merged_list = cidr_merge(ip_list)
+
+    ip_ranges = ""
+    for network in merged_list:
+        allocation_pool = IPSet(network)
+        if ip_ranges == "":
+            ip_ranges = str(allocation_pool.iprange())
+        else:
+            ip_ranges = ip_ranges + "," + str(allocation_pool.iprange())
+
+    return ip_ranges
+
 def get_all_networks():
     cursor = MySQLdb.cursors.DictCursor(conn)
     cursor.execute(
