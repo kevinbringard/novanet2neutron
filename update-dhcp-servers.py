@@ -1,16 +1,27 @@
 #!/usr/bin/env python
 
-import MySQLdb
+import argparse
 import ConfigParser
+import MySQLdb
 
 from novanet2neutron import common
+
+def collect_args():
+    parser = argparse.ArgumentParser(description='novanet2neutron.')
+
+    parser.add_argument('-c', '--config', action='store',
+                        default='novanet2neutron.conf', help="Config file")
+    parser.add_argument('-z', '--zone', action='store',
+                        help="AZ to migrate")
+    return parser.parse_args()
+
 
 def update_dhcp_ip(port_id, dhcp_server):
     cursor = MySQLdb.cursors.DictCursor(neutron_conn)
     cursor.execute("""
        UPDATE ipallocations
-       SET ip_address = %s 
-       WHERE port_id = %s 
+       SET ip_address = %s
+       WHERE port_id = %s
     """, (dhcp_server, port_id))
     cursor.connection.commit()
 
@@ -30,8 +41,9 @@ def get_all_network_ids():
 
     return uuids
 
+args = collect_args()
 CONF = ConfigParser.ConfigParser()
-common.load_config(CONF, 'novanet2neutron.conf')
+common.load_config(CONF, args.config)
 
 neutron_conn = MySQLdb.connect(
     host=CONF.get('neutron_db', 'host'),
