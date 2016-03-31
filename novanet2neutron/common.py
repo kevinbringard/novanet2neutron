@@ -74,17 +74,17 @@ def create_network(neutronc, network_name, tenant_id, vlan, physname='public'):
     return network_id
 
 def add_allocation_pools_to_subnet(neutronc, subnet_id, allocation_pools):
-    split_string = re.split(r',', allocation_pools)
-    request = {"subnet": {"allocation_pools": []}}
-    for string in split_string:
-        start = re.split(r'-', string)[0]
-        end = re.split(r'-', string)[1]
-        pool = {}
-        pool['start'] = start
-        pool['end'] = end
-        request['subnet']['allocation_pools'].append(pool)
+    split_string = re.split(r',', allocation_pools)
+    request = {"subnet": {"allocation_pools": []}}
+    for string in split_string:
+        start = re.split(r'-', string)[0]
+        end = re.split(r'-', string)[1]
+        pool = {}
+        pool['start'] = start
+        pool['end'] = end
+        request['subnet']['allocation_pools'].append(pool)
 
-    neutronc.update_subnet(subnet_id, request)
+    neutronc.update_subnet(subnet_id, request)
 
 def create_subnet(neutronc, network_id, protocol, cidr, dns_servers,
                   gateway, tenant_id, dhcp_start=None, dhcp_end=None,
@@ -109,8 +109,8 @@ def create_subnet(neutronc, network_id, protocol, cidr, dns_servers,
 
     sn_dict = subnet['subnets'][0]
     print('Created subnet %s' % sn_dict['id'])
-     allocation_pools:
-        add_allocation_pools_to_subnet(neutronc, subnet_id, allocation_pools)
+    if allocation_pools:
+        add_allocation_pools_to_subnet(neutronc, subnet_id, allocation_pools)
     return sn_dict['id']
 
 def get_network(neutronc, name):
