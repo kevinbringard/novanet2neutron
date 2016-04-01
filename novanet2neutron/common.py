@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import re
 
 from neutronclient.v2_0 import client as neutron_client
 from novaclient import client as nova_client
@@ -73,10 +74,23 @@ def create_network(neutronc, network_name, tenant_id, vlan, physname='public'):
     print('Network %s created' % network_id)
     return network_id
 
+def add_allocation_pools_to_subnet(neutronc, subnet_id, allocation_pools):
+    split_string = re.split(r',', allocation_pools)
+    request = {"subnet": {"allocation_pools": []}}
+    for string in split_string:
+        start = re.split(r'-', string)[0]
+        end = re.split(r'-', string)[1]
+        pool = {}
+        pool['start'] = start
+        pool['end'] = end
+        request['subnet']['allocation_pools'].append(pool)
+
+    neutronc.update_subnet(subnet_id, request)
 
 def create_subnet(neutronc, network_id, protocol, cidr, dns_servers,
                   gateway, tenant_id, dhcp_start=None, dhcp_end=None,
-                  ipv6_address_mode=None, ipv6_ra_mode=None):
+                  allocation_pools=None, ipv6_address_mode=None,
+                  ipv6_ra_mode=None):
 
     body_create_subnet = {'subnets': [{'cidr': cidr,
                                        'ip_version': protocol,
@@ -96,8 +110,10 @@ def create_subnet(neutronc, network_id, protocol, cidr, dns_servers,
 
     sn_dict = subnet['subnets'][0]
     print('Created subnet %s' % sn_dict['id'])
+    subnet_id = sn_dict['id']
+    if allocation_pools:
+        add_allocation_pools_to_subnet(neutronc, subnet_id, allocation_pools)
     return sn_dict['id']
-
 
 def get_network(neutronc, name):
     networks = neutronc.list_networks(name=name)['networks']

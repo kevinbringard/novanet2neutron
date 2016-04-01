@@ -73,6 +73,32 @@ def get_neutron_db_info(db_string):
 
         return db_host, db_name, db_pass[0], db_user[1]
 
+def get_free_ips_for_net(network_id):
+    cursor = MySQLdb.cursors.DictCursor(conn)
+    # select address from fixed_ips, networks where networks.id = fixed_ips.network_id and fixed_ips.reserved = 0 and networks.uuid = '02ad4c9b-ebe8-491a-b288-e33069ab4236';
+    cursor.execute(
+       "SELECT address FROM fixed_ips, networks WHERE networks.id = fixed_ips.network_id AND fixed_ips.reserved = 0 AND networks.uuid = '%s'" % network_id)
+    free_ips = cursor.fetchall()
+
+    return free_ips
+
+def generate_dhcp_allocation_pools(network_id):
+    free_ips = get_free_ips_for_net(network_id)
+    ip_list = []
+    for ip in free_ips:
+        ip_list.append(IPAddress(ip['address']))
+    merged_list = cidr_merge(ip_list)
+
+    ip_ranges = ""
+    for network in merged_list:
+        allocation_pool = IPSet(network)
+        if ip_ranges == "":
+            ip_ranges = str(allocation_pool.iprange())
+        else:
+            ip_ranges = ip_ranges + "," + str(allocation_pool.iprange())
+
+    return ip_ranges
+
 def get_all_networks():
     cursor = MySQLdb.cursors.DictCursor(conn)
     cursor.execute(
@@ -107,6 +133,26 @@ def get_dnsmasq_gateway(network):
                     else:
                         continue
 
+def get_dhcp_server_address(network):
+    # dhcp-option-force=tag:dev10-2199,option:classless-static-route,169.254.169.254/32,10.219.0.4
+    print network
+    config_file = open(DNSMASQ_CONF)
+    content = config_file.readlines()
+    for line in content:
+        if "classless-static-route" in line:
+            dhcp_line = re.split(r',', line)
+            print dhcp_line
+            dhcp_ip = dhcp_line[-1].rstrip()
+            print dhcp_ip
+            for item in dhcp_line:
+                if "tag:" in item:
+                    item = item.split(":")
+                    if network == item[-1]:
+                        return dhcp_ip
+                    else:
+                        continue
+    return
+
 # Pull the DB info out of the config files
 nova_db_host, nova_db_name, nova_db_pass, nova_db_user = get_nova_db_info(nova_db_string)
 neutron_db_host, neutron_db_name, neutron_db_pass, neutron_db_user = get_neutron_db_info(neutron_db_string)
@@ -133,6 +179,8 @@ for network in get_all_networks():
     dns_server2 = network_info[0]['dns2']
     tenant_id = network_info[0]['project_id']
     vlan = network_info[0]['vlan']
+    allocation_pools = generate_dhcp_allocation_pools(uuid)
+    dhcp_server = get_dhcp_server_address(name)
     dns_servers = ""
     if dns_server1 and dns_server2:
         dns_servers = "%s,%s" % (dns_server1, dns_server2)
@@ -150,6 +198,8 @@ for network in get_all_networks():
     novanet2neutron_config.set(section, 'gateway_v4', gateway_v4)
     novanet2neutron_config.set(section, 'dhcp_start', dhcp_start)
     novanet2neutron_config.set(section, 'dhcp_end', dhcp_end)
+    novanet2neutron_config.set(section, 'allocation_pools', allocation_pools)
+    novanet2neutron_config.set(section, 'dhcp_server', dhcp_server)
     novanet2neutron_config.set(section, 'dns_servers', dns_servers)
     novanet2neutron_config.set(section, 'tenant_id', tenant_id)
     novanet2neutron_config.set(section, 'vlan', vlan)

@@ -117,7 +117,8 @@ def create_networks(neutronc):
                 gateway_v4,
                 CONF.get(section, 'tenant_id'),
                 CONF.get(section, 'dhcp_start'),
-                CONF.get(section, 'dhcp_end'))
+                CONF.get(section, 'dhcp_end'),
+                CONF.get(section, 'allocation_pools'))
         mappings[section]['subnet_v4_id'] = subnet_v4
         if 'cidr_v6' in CONF.options(section):
             subnet_v6 = common.create_subnet(
