@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import re
 
 from neutronclient.v2_0 import client as neutron_client
 from novaclient import client as nova_client
@@ -109,6 +110,7 @@ def create_subnet(neutronc, network_id, protocol, cidr, dns_servers,
 
     sn_dict = subnet['subnets'][0]
     print('Created subnet %s' % sn_dict['id'])
+    subnet_id = sn_dict['id']
     if allocation_pools:
         add_allocation_pools_to_subnet(neutronc, subnet_id, allocation_pools)
     return sn_dict['id']
