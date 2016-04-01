@@ -11,8 +11,6 @@ def collect_args():
 
     parser.add_argument('-c', '--config', action='store',
                         default='novanet2neutron.conf', help="Config file")
-    parser.add_argument('-z', '--zone', action='store',
-                        help="AZ to migrate")
     return parser.parse_args()
 
 
@@ -63,7 +61,6 @@ for section in CONF.sections():
 
     for option in CONF.options(section):
         mappings[section][option] = CONF.get(section, option)
-
 
     zone = CONF.get(section, 'zone')
     network_name = CONF.get(section, 'name')
