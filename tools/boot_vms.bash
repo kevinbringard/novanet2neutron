@@ -13,5 +13,6 @@ for i in $TENANTS; do
   nova boot --flavor $FLAVOR_NAME --image $IMAGE_NAME --key-name $KEY_NAME --security-groups $SECGROUP_NAME ${i}-vm1
   sleep 2
   nova boot --flavor $FLAVOR_NAME --image $IMAGE_NAME --key-name $KEY_NAME --security-groups $SECGROUP_NAME ${i}-vm2
+  sleep 2
 
 done
